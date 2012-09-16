@@ -1,3 +1,5 @@
+window.onload = function(){
+	
 var WIDTH = 1200;
 var HEIGHT = 800;
 var canvas;
@@ -23,6 +25,22 @@ ctx.fill();
 ctx.stroke();
 }
 
+
+
+
+function Fish(x, y){
+	this.x = x;
+	this.y = y;
+	this.draw = function(){
+		ctx.fillStyle = "purple";
+        circle(this.x, this.y, 10);
+	}
+}
+var myFish = new Fish(20, 20);
+var myFish2 = new Fish(20, 40);
+
+
+
 function init() {
   canvas = document.getElementById("myCanvas");
   ctx = canvas.getContext("2d");
@@ -30,20 +48,21 @@ function init() {
 }
 
 
+
 function doKeyDown(evt){
 	switch (evt.keyCode) {
 	case 38:  /* Up arrow was pressed */
-	y -= 10;
-	break;
+		myFish.y -= 10;
+		break;
 	case 40:  /* Down arrow was pressed */
-	y += 10;
-	break;
+		myFish.y += 10;
+		break;
 	case 37:  /* Left arrow was pressed */
-	x -= 10;
-	break;
+		myFish.x -= 10;
+		break;
 	case 39:  /* Right arrow was pressed */
-	x += 10;
-	break;
+		myFish.x += 10;
+		break;
 	}
 }
 
@@ -52,9 +71,11 @@ function draw() {
   ctx.fillStyle = "white";
   ctx.strokeStyle = "black";
   rect(300,300,200,50);
-  ctx.fillStyle = "purple";
-  circle(x, y, 10);
+
+  myFish.draw();
+  myFish2.draw();
 }
 
 init();
 window.addEventListener('keydown',doKeyDown,true);
+}
