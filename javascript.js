@@ -1,4 +1,4 @@
-window.onload = function(){
+
 	
 var WIDTH = 1200;
 var HEIGHT = 800;
@@ -25,9 +25,6 @@ ctx.fill();
 ctx.stroke();
 }
 
-
-
-
 function Fish(x, y){
 	this.x = x;
 	this.y = y;
@@ -38,7 +35,6 @@ function Fish(x, y){
 }
 var myFish = new Fish(20, 20);
 var myFish2 = new Fish(20, 40);
-
 
 
 function init() {
@@ -76,6 +72,7 @@ function draw() {
   myFish2.draw();
 }
 
+window.onload = function(){
 init();
-window.addEventListener('keydown',doKeyDown,true);
 }
+window.addEventListener('keydown',doKeyDown,true);
