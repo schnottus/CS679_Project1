@@ -1,9 +1,12 @@
 
 	
-var WIDTH = 1200;
+var WIDTH = 1200;  //height and width should match canvas in index.html, is there a way to assert this?
 var HEIGHT = 800;
 var canvas;
 var ctx;
+
+var flock = [];
+
 
 var x = 100;
 var y = 100;
@@ -25,6 +28,16 @@ ctx.fill();
 ctx.stroke();
 }
 
+function printFlock(){ //flock troubleshooting
+	var str = "Flock array:";
+	
+	for(var i = 0; i < flock.length; i++){
+		str += "\nfish " +i +": " +flock[i].x +", " +flock[i].y;
+	}
+	
+	alert(str);
+}
+
 function Fish(x, y){
 	this.x = x;
 	this.y = y;
@@ -33,14 +46,37 @@ function Fish(x, y){
         circle(this.x, this.y, 10);
 	}
 }
-var myFish = new Fish(20, 20);
-var myFish2 = new Fish(20, 40);
+//var myFish = new Fish(20, 20);
+//var myFish2 = new Fish(20, 40);
+
+function fillFlock(qty){
+	for (var i = 0; i < qty; i++){
+		var rx = Math.floor((Math.random()*WIDTH)+1);	//random x position between 1 and width
+		var ry = Math.floor((Math.random()*HEIGHT)+1);	//random y position between 1 and height
+		var tmp = new Fish(rx, ry);
+		flock.push(tmp);  //add new fish to end of flock array
+	}
+
+}
+
+function renderFlock(){
+	var size = flock.length;
+	for(var i = 0; i < size; i++){
+		flock[i].draw();
+	}
+}
+	
 
 
 function init() {
   canvas = document.getElementById("myCanvas");
   ctx = canvas.getContext("2d");
+  
+  fillFlock(10);
+  
   return setInterval(draw, 10);  //calls the draw function every 10 milliseconds
+  
+  
 }
 
 
@@ -66,10 +102,12 @@ function draw() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT); //erase everything on the canvas
   ctx.fillStyle = "white";
   ctx.strokeStyle = "black";
-  rect(300,300,200,50);
+  //rect(300,300,200,50);
 
-  myFish.draw();
-  myFish2.draw();
+  //myFish.draw();
+  //myFish2.draw();
+  
+  renderFlock();
 }
 
 window.onload = function(){
