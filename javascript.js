@@ -6,8 +6,8 @@ var canvas;
 var ctx;
 
 var flock = [];  //all fish on game board
-var preySpeed = 5;	//regular fish speed to normalize to
-var predSpeed = 4;  //predator speed
+var preySpeed = 2;	//regular fish speed to normalize to
+var predSpeed = 2;  //predator speed
 var align = 0.95;  //alignment strength (between 0 and 1)
 var preySight = 150; //distance a fish can "see" other fish
 var predSight = 200; //distance a predator can "see other fish
@@ -56,6 +56,31 @@ function print2dArray(array)
 	alert(table);
 }
 
+function Shark(x, y, vX, vY){
+	this.x = x;
+	this.y = y;
+	this.vX = vX;
+	this.vY = vY;
+	this.mouthX = 433;
+	this.mouthY = 98;
+	
+	this.img = new Image();
+	if(vX < 0){
+		this.img.src = "img/shark2.png";
+	}
+	else{
+		 this.img.src = "img/shark.png";
+	}
+	
+	
+	this.draw = function(){
+		ctx.drawImage(this.img, this.x, this.y);
+		this.x+= this.vX;
+		if(this.x > 1200) this.x = -500;
+		else if (this.x < -500) this.x = 1200;
+	}
+}
+
 function Fish(x, y, vX, vY, type){
 	this.type = type;   // 0 for player, 1 for regular fish, 2 for predator fish
 	switch(type){
@@ -64,6 +89,10 @@ function Fish(x, y, vX, vY, type){
 		break;
 	case 1:
 		this.speed = preySpeed;
+		this.img1 = new Image()
+		this.img1.src = "img/clown fish.png";
+		this.img2 = new Image();
+		this.img2.src = "img/clown fish2.png";
 		break;
 	case 2:
 		this.speed = predatorSpeed;
@@ -76,6 +105,7 @@ function Fish(x, y, vX, vY, type){
 	this.vX = vX;
 	this.vY = vY;
 	this.draw = function(){
+	/*
 		ctx.strokeStyle = "black";
 		ctx.fillStyle = "purple";
 		ctx.beginPath();
@@ -86,6 +116,19 @@ function Fish(x, y, vX, vY, type){
 		ctx.closePath();
 		ctx.stroke();
 		ctx.fill();
+		*/
+		ctx.save();
+			var aTanVal = Math.atan(this.vY/this.vX);
+			ctx.translate(this.x, this.y);
+			
+			if(this.vX < 0){
+				ctx.rotate(Math.PI+aTanVal);
+				ctx.drawImage(this.img2, 0, 0);
+			} else{
+				ctx.rotate(aTanVal);
+				ctx.drawImage(this.img1, 0, 0);
+			}
+			ctx.restore();
 	}
 	
 	this.move = function() {
@@ -156,6 +199,13 @@ function renderFlock(){
 	}
 }
 
+var shark = new Shark(-500, 200, 2, 0);
+var shark2 = new Shark(1200, 500, -1.5, 0);
+function renderSharks(){
+	shark.draw();
+	shark2.draw();
+}
+
 
 function updateFlock(){
 	
@@ -204,7 +254,13 @@ function updateFlock(){
 					tmpVX[i] = -fishJ.vX;
 				}
 			}
+			
+			
         }
+		if( Math.abs(fishI.x - (shark.x+shark.mouthX)) < 20 && Math.abs(fishI.y - (shark.y+shark.mouthY)) < 20){
+			flock.splice(i, 1);
+			i--;
+		}
     }
 	
 	for(var i= 0; i < flock.length;  i++) {
@@ -259,12 +315,13 @@ function gameLoop() {
 	ctx.clearRect(0, 0, WIDTH, HEIGHT); //erase everything on the canvas
 	
 	//white canvas background, remove when we get an image in place
-	ctx.fillStyle = "white";
+	ctx.fillStyle = "#0589B2";
 	ctx.fillRect(0,0,WIDTH,HEIGHT);
 	
 	//draw background image
 	renderFlock();  //draw regular fish (flock)
 	//draw predators
+	renderSharks();
 }
 
 window.onload = function(){
