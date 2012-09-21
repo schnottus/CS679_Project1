@@ -8,14 +8,19 @@ var ctx;
 var flock = [];  //all fish on game board
 var preySpeed = 5;	//regular fish speed to normalize to
 var predSpeed = 4;  //predator speed
-var align = 0.8;  //alignment strength (between 0 and 1)
-var preySight = 50; //distance a fish can "see" other fish
+var align = 0.95;  //alignment strength (between 0 and 1)
+var preySight = 150; //distance a fish can "see" other fish
 var predSight = 200; //distance a predator can "see other fish
 
-var crowdDist = 10; //distance that fish try to stay away from other fish
+var crowdDist = 15; //distance that fish try to stay away from other fish
 
 
 
+function editAlign(amt){
+	align += amt;
+	if(align <= 0 ) align = 0.01;
+	if(align > 1) align = 1;
+}
 
 //returns random number between 2 values (inclusive)
 function randFromTo(from,to)
@@ -159,8 +164,6 @@ function updateFlock(){
 		flock[i].move();
 	}
 	
-	var ali = 0.6;
-	
 	var tmpVX = new Array(flock.length); //temporarily storage of new vX
 	var tmpVY = new Array(flock.length);
 	
@@ -181,13 +184,25 @@ function updateFlock(){
 			var dy = (fishJ.y - fishI.y);
 			var dist = Math.sqrt((dx*dx)+(dy*dy));
 			
-			tmpVX[i] += (fishJ.vX / (dist + ali));
-			tmpVY[i] += (fishJ.vY / (dist + ali));
-
-			//bounce
-			if(dist <= 10 && dist > 0){
-			tmpVX[i] = -fishJ.vX;
-			tmpVY[i] = -fishJ.vY;
+			if(dist <= preySight){  //update if more than one type of fish
+			tmpVX[i] += (fishJ.vX / (dist + align));
+			tmpVY[i] += (fishJ.vY / (dist + align));
+			}
+			
+			/*
+			//redirect if too close 
+			if(dist <= crowdDist && dist > 0){  //dist == 0 when self so disregard 0
+				tmpVX[i] = -fishJ.vX;
+				tmpVY[i] = -fishJ.vY;
+			}*/
+			
+			//slightly smoother redirect, only on the minor axis
+			if(dist <= crowdDist && dist > 0){  //dist == 0 when self so disregard 0
+				if(fishJ.vX > fishJ.vY){
+					tmpVY[i] = -fishJ.vY;
+				}else{
+					tmpVX[i] = -fishJ.vX;
+				}
 			}
         }
     }
@@ -198,97 +213,6 @@ function updateFlock(){
             flock[i].vY = tmpVY[i];
 			flock[i].norm();
         } 
-	
-	// use neighbor[] to adjust velocity per three flocking rules
-		
-	//loop through flock
-	/*for(var i = 0; i < flock.length; i++){
-		
-		
-		var nearby = neighbor[i].length; //number of nearby boids
-		if(nearby > 0){  //0 is by someone
-		
-			var cohPos = new Vec2(0,0);//average position of neighbors (used for coherence)
-			var avgVel = new Vec2(0,0);//average velocity vector of neighbors
-			var avgAvd = new Vec2(0,0);//average position of "crowded" neighbors (those too close to you)
-			var avoided = 0; //for normalizing avgAvd position
-			
-			//loop through all neighbors and sum vectors for position, velocity, 
-			//	and position of those crowding you (in case there are multiple)
-			for(var j = 0; j < nearby; j++){  
-				cohPos.x += neighbor[i][j].x;
-				cohPos.y += neighbor[i][j].y;
-				
-				avgVel.x += neighbor[i][j].vX;
-				avgVel.y += neighbor[i][j].vY;
-				
-				//if neighbor is crowding you add his position and increment "avoided"
-				if(neighborDist[i][j] <= crowdDist){
-					//avgAvd.x += neighbor[i][j].x;
-					//avgAvd.y += neighbor[i][j].y;
-					//alert("\nAdded avgAvd: \tx: " +avgAvd.x +"\ty: " +avgAvd.y);
-					//avoided += 1;
-					
-					//bounce them
-					
-				}
-			}
-			
-			//average
-			cohPos.x = cohPos.x / nearby;
-			cohPos.y = cohPos.y / nearby;
-			avgVel.x = avgVel.x / nearby;
-			avgVel.y = avgVel.y / nearby;
-			if(avoided > 0){
-				avgAvd.x = avgAvd.x / avoided;
-				avgAvd.y = avgAvd.y / avoided;
-				//alert("\nAveraged avgAvd: \tx: " +avgAvd.x +"\ty: " +avgAvd.y);
-			}
-			
-			//create normalized vectors
-			//calculate vector from current position to cohPos
-			cohPos.x = (cohPos.x - flock[i].x) / (preySight/preySpeed);
-			cohPos.y = (cohPos.y - flock[i].y) / (preySight/preySpeed);
-			
-			//calculate vector from current position to avgAvd (making it negative as we want to avoid them)
-			if(avoided > 0){
-				avgAvd.x = -(flock[i].x - avgAvd.x);
-				avgAvd.y = -(flock[i].y - avgAvd.y);
-			}
-			
-			alert("\nFish 0: \tx: " +flock[i].vX +"\ty: " +flock[i].vY
-				+ "\ncohPos: \tx: " +cohPos.x +"\ty: " +cohPos.y
-				+ "\navgVel: \tx: " +avgVel.x +"\ty: " +avgVel.y
-				+ "\navgAvd: \tx: " +avgAvd.x +"\ty: " +avgAvd.y);
-			
-				
-			//compute new vector with weighting
-			var newX = (((ori * flock[i].vX) 	//weighted original velocity
-						//+ (avd * avgAvd.x)		//avoidance * average vector toward "too close" neighbors
-						+ (ali * avgVel.x)		//alignment * average neighbor alignmnent
-						+ (coh * cohPos.x)		//weighted cohesion vector
-						) / 3);					//average
-						
-			var newY = (((ori * flock[i].vY) 	//weighted original velocity
-						//+ (avd * avgAvd.y)		//avoidance * average vector toward "too close" neighbors
-						+ (ali * avgVel.y)		//alignment * average neighbor alignmnent
-						+ (coh * cohPos.y)		//weighted cohesion vector
-						) / 3);					//average
-			
-			//alert("Fish i: \tx: " +newX +"\ty: " +newY);
-			//assign new vector
-			flock[i].vX = newX;
-			flock[i].vY = newY;
-			flock[i].norm();
-			
-			
-		}
-		
-	}*/ //end loop i
-		
-	
-	
-	//print2dArray(neighborDist);  //for troubleshooting
 	
 	
 }
@@ -304,7 +228,7 @@ function init() {
 	ctx = canvas.getContext("2d");
 	ctx.fillStyle = "white";
 	ctx.strokeStyle = "black";
-	fillFlock(20);
+	fillFlock(50);
   
 	//change to request animation frame
 	return setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
@@ -333,6 +257,10 @@ function gameLoop() {
 	updateGame();  //update game pieces, score, etc
 	
 	ctx.clearRect(0, 0, WIDTH, HEIGHT); //erase everything on the canvas
+	
+	//white canvas background, remove when we get an image in place
+	ctx.fillStyle = "white";
+	ctx.fillRect(0,0,WIDTH,HEIGHT);
 	
 	//draw background image
 	renderFlock();  //draw regular fish (flock)

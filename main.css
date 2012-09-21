@@ -1,0 +1,34 @@
+/*
+css for project1 javascript game
+Author: Scott Larson
+*/
+
+h1{
+	color: black;
+    font-family: Helvetica, Geneva, Arial,
+          SunSans-Regular, sans-serif;
+}
+
+body{
+	color: purple;
+	background-color: #cccccc;
+	padding: 10px 10px 10px 10px;
+}
+
+#instructions{
+	float: left;
+	width: 200px;
+}
+
+#game{
+	float: left;
+	width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#options{
+	float: left;
+	width: 200px;
+	padding: 10px 10px 10px 10px;
+}
