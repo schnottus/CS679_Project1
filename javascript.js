@@ -6,13 +6,18 @@ var canvas;
 var ctx;
 
 var flock = [];  //all fish on game board
+var sharks = [];
 var preySpeed = 2;	//regular fish speed to normalize to
 var predSpeed = 2;  //predator speed
 var align = 0.95;  //alignment strength (between 0 and 1)
 var preySight = 150; //distance a fish can "see" other fish
 var predSight = 200; //distance a predator can "see other fish
-
+var arcPlayer = 0; //rotation of player fish
 var crowdDist = 15; //distance that fish try to stay away from other fish
+var leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely strong, 1.0 for normal fish strength
+var test = 0;
+
+
 
 
 
@@ -55,14 +60,41 @@ function print2dArray(array)
 	
 	alert(table);
 }
-
-function Shark(x, y, vX, vY){
+function Octopus(x, y){
+	this.x = x;
+	this.y = y;
+	this.vX = 0;
+	this.vY = 0;
+	this.counter = 499;
+	this.img = new Image();
+	this.img.src = "img/octopus.png";
+	this.draw = function(){
+		ctx.drawImage(this.img, this.x, this.y);
+		this.x += this.vX;
+		this.y += this.vY;
+		this.counter++;
+		if(this.counter == 500){
+			this.vX = randFromTo(0, 1)/10 - 0.05;
+			this.vY = randFromTo(0, 1)/10 - 0.05;
+			this.counter = 0;
+		}else if(this.x < -200){
+			this.vX = .1;
+		}else if(this.x > WIDTH-300){
+			this.vX = -.1;
+		}else if(this.y > HEIGHT-200){
+			this.vY = -.1;
+		}else if(this.y < -100){
+			this.vY = .1;
+		}
+	}
+}
+function Shark(x, y, vX, vY, mouthX){
 	this.x = x;
 	this.y = y;
 	this.vX = vX;
 	this.vY = vY;
-	this.mouthX = 433;
-	this.mouthY = 98;
+	this.mouthX = mouthX;
+	this.mouthY = 103;
 	
 	this.img = new Image();
 	if(vX < 0){
@@ -76,8 +108,8 @@ function Shark(x, y, vX, vY){
 	this.draw = function(){
 		ctx.drawImage(this.img, this.x, this.y);
 		this.x+= this.vX;
-		if(this.x > 1200) this.x = -500;
-		else if (this.x < -500) this.x = 1200;
+		
+
 	}
 }
 
@@ -105,21 +137,24 @@ function Fish(x, y, vX, vY, type){
 	this.vX = vX;
 	this.vY = vY;
 	this.draw = function(){
-	/*
+		/*
+		ctx.save();
 		ctx.strokeStyle = "black";
 		ctx.fillStyle = "purple";
 		ctx.beginPath();
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, 5, 0, Math.PI*2, true);
+		
+
 		ctx.moveTo(this.x,this.y);
         ctx.lineTo(this.x + 6*this.vX, this.y + 6*this.vY);
 		ctx.closePath();
 		ctx.stroke();
 		ctx.fill();
+		ctx.restore();
 		*/
+		
 		ctx.save();
 			var aTanVal = Math.atan(this.vY/this.vX);
-			ctx.translate(this.x, this.y);
+			ctx.translate(this.x-25, this.y-15);
 			
 			if(this.vX < 0){
 				ctx.rotate(Math.PI+aTanVal);
@@ -185,28 +220,70 @@ function fillFlock(qty){
 		var rvX = preySpeed;
 		var rvY = preySpeed;
 		var tmp = new Fish(rx, ry, rvX, rvY, type);
+		if(i == 0){
+			tmp.img1.src = "img/lead fish.png";
+			tmp.img2.src = "img/lead fish2.png";
+		}
 		flock.push(tmp);  //add new fish to end of flock array
 	}
 	
 
 }
+function fillSharks(qty){
+	for (var i = 0; i < qty; i++){
+		var rx = randFromTo(0, 1);	//random x position between 1 and 2
+		var ry = randFromTo(1, HEIGHT-200);	//random y position between 1 and height
+		//var rvX = randFromTo(1, preySpeed);  //random x velocity between 1 and speed
+		//var rvY = randFromTo(1, preySpeed);  //random y velocity between 1 and speed
+		var rvX;
+		var mouthX;
+		if(rx > .5){
+			rvX = 2;
+			rx = -1*randFromTo(300,900);
+			mouthX = 434;
+		} else{
+			rvX = -2;
+			rx = WIDTH + randFromTo(300,900);
+			mouthX = 41;
+		}
+		var rvY = 0;
+		var tmp = new Shark(rx, ry, rvX, rvY, mouthX);
+		sharks.push(tmp);  //add new fish to end of flock array
+	}
+}
+
+
 
 function renderFlock(){
 	for(var i = 0; i <  flock.length; i++){
 		flock[i].draw();
-		ctx.font = "14pt Arial";
-		ctx.fillText(i, flock[i].x, flock[i].y + -20);
+		//ctx.font = "14pt Arial";
+		//ctx.fillText(i, flock[i].x, flock[i].y + -20);
 	}
 }
 
-var shark = new Shark(-500, 200, 2, 0);
-var shark2 = new Shark(1200, 500, -1.5, 0);
+
 function renderSharks(){
-	shark.draw();
-	shark2.draw();
+	for(var i = 0; i <  sharks.length; i++){
+		sharks[i].draw();
+		//ctx.font = "14pt Arial";
+		//ctx.fillText(i, flock[i].x, flock[i].y + -20);
+	}
+}
+var oct = new Octopus(300, 300);
+function renderOctopuses(){
+	oct.draw();
 }
 
-
+function updateSharks(){
+	for(var i = 0; i <  sharks.length; i++){
+		var s = sharks[i];
+		if((s.vX > 0 && s.x > WIDTH+50) || (s.vX < 0 && s.x < -500)){
+			sharks.splice(i, 1);
+			fillSharks(1);
+		}
+	}
+}
 function updateFlock(){
 	
 	//temporory, makes them all move
@@ -235,8 +312,16 @@ function updateFlock(){
 			var dist = Math.sqrt((dx*dx)+(dy*dy));
 			
 			if(dist <= preySight){  //update if more than one type of fish
-			tmpVX[i] += (fishJ.vX / (dist + align));
-			tmpVY[i] += (fishJ.vY / (dist + align));
+			//tmpVX[i] += (fishJ.vX / (dist + align));
+			//tmpVY[i] += (fishJ.vY / (dist + align));
+				if(j == 0){ //player fish nearby, disregard own vector
+					tmpVX[i] += (fishJ.vX / ((dist*leadStr) + align));
+					tmpVY[i] += (fishJ.vY / ((dist*leadStr) + align));
+				}else{ //other fish
+					tmpVX[i] += (fishJ.vX / (dist + align));
+					tmpVY[i] += (fishJ.vY / (dist + align));
+				}
+			
 			}
 			
 			/*
@@ -246,24 +331,30 @@ function updateFlock(){
 				tmpVY[i] = -fishJ.vY;
 			}*/
 			
-			//slightly smoother redirect, only on the minor axis
-			if(dist <= crowdDist && dist > 0){  //dist == 0 when self so disregard 0
+			//slightly smoother redirect, only on the minor axis, also no bounce for player fish
+			if(dist <= crowdDist && dist > 0 && j !=0){  //dist == 0 when self so disregard 0
 				if(fishJ.vX > fishJ.vY){
 					tmpVY[i] = -fishJ.vY;
 				}else{
 					tmpVX[i] = -fishJ.vX;
 				}
 			}
-			
-			
         }
-		if( Math.abs(fishI.x - (shark.x+shark.mouthX)) < 20 && Math.abs(fishI.y - (shark.y+shark.mouthY)) < 20){
-			flock.splice(i, 1);
-			i--;
+		for(var j = 0; j < sharks.length; j++){
+			var shark = sharks[j];
+			if( Math.abs(fishI.x - (shark.x+shark.mouthX)) < 25 && Math.abs(fishI.y - (shark.y+shark.mouthY)) < 20){
+				flock.splice(i, 1);
+				i--;
+				if(i == -1 && flock.length > 0){
+					flock[0].img1.src = "img/lead fish.png";
+					flock[0].img2.src = "img/lead fish2.png";
+				}
+			}
 		}
     }
 	
-	for(var i= 0; i < flock.length;  i++) {
+    //start at 1 to not affect player
+	for(var i= 1; i < flock.length;  i++) {
 			//alert("tmvVX " +i + ": " + tmpVX[i] + "\ntmvVY " +i + ": " + tmpVY[i]);
             flock[i].vX = tmpVX[i];
             flock[i].vY = tmpVY[i];
@@ -276,6 +367,7 @@ function updateFlock(){
 function updateGame(){
 	updateFlock();
 	//updatePredators
+	updateSharks();
 	//update user interface (health, score, etc)
 }
 
@@ -285,6 +377,7 @@ function init() {
 	ctx.fillStyle = "white";
 	ctx.strokeStyle = "black";
 	fillFlock(50);
+	fillSharks(3);
   
 	//change to request animation frame
 	return setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
@@ -295,21 +388,30 @@ function init() {
 function doKeyDown(evt){
 	switch (evt.keyCode) {
 	case 38:  /* Up arrow was pressed */
-		flock[0].y -= 10;
+		//flock[0].vX += 1;
+		//flock[0].vY += 1;
 		break;
 	case 40:  /* Down arrow was pressed */
-		flock[0].y += 10;
+		//flock[0].vX -= 1;
+		//flock[0].vY -= 1;
 		break;
 	case 37:  /* Left arrow was pressed */
-		flock[0].x -= 10;
+		arcPlayer -= 0.1;
+		flock[0].vX = Math.cos(arcPlayer);
+		flock[0].vY = Math.sin(arcPlayer);
+		flock[0].norm();
 		break;
 	case 39:  /* Right arrow was pressed */
-		flock[0].x += 10;
+		arcPlayer += 0.1;
+		flock[0].vX = Math.cos(arcPlayer);
+		flock[0].vY = Math.sin(arcPlayer);
+		flock[0].norm();
 		break;
 	}
 }
 
 function gameLoop() {
+
 	updateGame();  //update game pieces, score, etc
 	
 	ctx.clearRect(0, 0, WIDTH, HEIGHT); //erase everything on the canvas
@@ -319,9 +421,11 @@ function gameLoop() {
 	ctx.fillRect(0,0,WIDTH,HEIGHT);
 	
 	//draw background image
-	renderFlock();  //draw regular fish (flock)
+ //draw regular fish (flock)
 	//draw predators
 	renderSharks();
+		renderFlock(); 
+	renderOctopuses();
 }
 
 window.onload = function(){
