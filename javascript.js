@@ -11,7 +11,7 @@ var predSpeed = 2;  //predator speed
 var align = 0.95;  //alignment strength (between 0 and 1)
 var preySight = 150; //distance a fish can "see" other fish
 var predSight = 200; //distance a predator can "see other fish
-
+var arcPlayer = 0; //rotation of player fish
 var crowdDist = 15; //distance that fish try to stay away from other fish
 
 
@@ -233,10 +233,19 @@ function updateFlock(){
 			var dx = (fishJ.x - fishI.x);
 			var dy = (fishJ.y - fishI.y);
 			var dist = Math.sqrt((dx*dx)+(dy*dy));
+			var leadStr = 0.1;  //0 for infinitely strong lead, 1 for no lead (same effect as other fish)
 			
 			if(dist <= preySight){  //update if more than one type of fish
-			tmpVX[i] += (fishJ.vX / (dist + align));
-			tmpVY[i] += (fishJ.vY / (dist + align));
+			//tmpVX[i] += (fishJ.vX / (dist + align));
+			//tmpVY[i] += (fishJ.vY / (dist + align));
+				if(j == 0){ //player fish nearby, disregard own vector
+					tmpVX[i] += (fishJ.vX / ((dist*leadStr) + align));
+					tmpVY[i] += (fishJ.vY / ((dist*leadStr) + align));
+				}else{ //other fish
+					tmpVX[i] += (fishJ.vX / (dist + align));
+					tmpVY[i] += (fishJ.vY / (dist + align));
+				}
+			
 			}
 			
 			/*
@@ -246,8 +255,8 @@ function updateFlock(){
 				tmpVY[i] = -fishJ.vY;
 			}*/
 			
-			//slightly smoother redirect, only on the minor axis
-			if(dist <= crowdDist && dist > 0){  //dist == 0 when self so disregard 0
+			//slightly smoother redirect, only on the minor axis, also no bounce for player fish
+			if(dist <= crowdDist && dist > 0 && j !=0){  //dist == 0 when self so disregard 0
 				if(fishJ.vX > fishJ.vY){
 					tmpVY[i] = -fishJ.vY;
 				}else{
@@ -263,7 +272,8 @@ function updateFlock(){
 		}
     }
 	
-	for(var i= 0; i < flock.length;  i++) {
+	//starting at 1 to skip fish 0 (player controlled)
+	for(var i= 1; i < flock.length;  i++) {
 			//alert("tmvVX " +i + ": " + tmpVX[i] + "\ntmvVY " +i + ": " + tmpVY[i]);
             flock[i].vX = tmpVX[i];
             flock[i].vY = tmpVY[i];
@@ -295,16 +305,24 @@ function init() {
 function doKeyDown(evt){
 	switch (evt.keyCode) {
 	case 38:  /* Up arrow was pressed */
-		flock[0].y -= 10;
+		//flock[0].vX += 1;
+		//flock[0].vY += 1;
 		break;
 	case 40:  /* Down arrow was pressed */
-		flock[0].y += 10;
+		//flock[0].vX -= 1;
+		//flock[0].vY -= 1;
 		break;
 	case 37:  /* Left arrow was pressed */
-		flock[0].x -= 10;
+		arcPlayer -= 0.1;
+		flock[0].vX = Math.cos(arcPlayer);
+		flock[0].vY = Math.sin(arcPlayer);
+		flock[0].norm();
 		break;
 	case 39:  /* Right arrow was pressed */
-		flock[0].x += 10;
+		arcPlayer += 0.1;
+		flock[0].vX = Math.cos(arcPlayer);
+		flock[0].vY = Math.sin(arcPlayer);
+		flock[0].norm();
 		break;
 	}
 }
