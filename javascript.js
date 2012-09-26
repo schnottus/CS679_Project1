@@ -310,6 +310,7 @@ function updateFlock(){
 			var dx = (fishJ.x - fishI.x);
 			var dy = (fishJ.y - fishI.y);
 			var dist = Math.sqrt((dx*dx)+(dy*dy));
+			var leadStr = 0.1;  //0 for infinitely strong lead, 1 for no lead (same effect as other fish)
 			
 			if(dist <= preySight){  //update if more than one type of fish
 			//tmpVX[i] += (fishJ.vX / (dist + align));
