@@ -16,10 +16,17 @@ var arcPlayer = 0; //rotation of player fish
 var crowdDist = 15; //distance that fish try to stay away from other fish
 var leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely strong, 1.0 for normal fish strength
 var test = 0;
+var totalSeconds = 0;
+var timeString = "0:00";
 
-
-
-
+//called once every second by setInterval in the init function
+function setTime(){
+    ++totalSeconds; //increment seconds
+    var seconds = totalSeconds%60 + ""; //get seconds string 
+	if(seconds.length < 2) seconds = "0" + seconds; //to display a "0" in front of single-digit seconds
+    var minutes = Math.floor(totalSeconds/60); //minutes string
+	timeString = (minutes + ":" + seconds);
+}
 
 function editAlign(amt){
 	align += amt;
@@ -28,8 +35,7 @@ function editAlign(amt){
 }
 
 //returns random number between 2 values (inclusive)
-function randFromTo(from,to)
-{
+function randFromTo(from,to){
     return Math.floor(Math.random()*(to-from +1) +from);
 }
 
@@ -43,8 +49,7 @@ function printFlock(){ //flock troubleshooting
 	alert(str);
 }
 
-function print2dArray(array)
-{
+function print2dArray(array){
 	var table = "Array: \n";
 	var row;
 	for (row = 0; row < array.length; ++row)
@@ -60,6 +65,7 @@ function print2dArray(array)
 	
 	alert(table);
 }
+
 function Octopus(x, y){
 	this.x = x;
 	this.y = y;
@@ -88,6 +94,7 @@ function Octopus(x, y){
 		}
 	}
 }
+
 function Shark(x, y, vX, vY, mouthX){
 	this.x = x;
 	this.y = y;
@@ -209,7 +216,6 @@ function Fish(x, y, vX, vY, type){
 	
 }
 
-
 function fillFlock(qty){
 	for (var i = 0; i < qty; i++){
 		var type = 1;
@@ -227,8 +233,8 @@ function fillFlock(qty){
 		flock.push(tmp);  //add new fish to end of flock array
 	}
 	
-
 }
+
 function fillSharks(qty){
 	for (var i = 0; i < qty; i++){
 		var rx = randFromTo(0, 1);	//random x position between 1 and 2
@@ -252,8 +258,6 @@ function fillSharks(qty){
 	}
 }
 
-
-
 function renderFlock(){
 	for(var i = 0; i <  flock.length; i++){
 		flock[i].draw();
@@ -262,7 +266,6 @@ function renderFlock(){
 	}
 }
 
-
 function renderSharks(){
 	for(var i = 0; i <  sharks.length; i++){
 		sharks[i].draw();
@@ -270,9 +273,16 @@ function renderSharks(){
 		//ctx.fillText(i, flock[i].x, flock[i].y + -20);
 	}
 }
+
 var oct = new Octopus(300, 300);
 function renderOctopuses(){
 	oct.draw();
+}
+
+function renderTime(){
+	ctx.fillStyle = "black";
+	ctx.font = "20pt Arial";
+	ctx.fillText(timeString, WIDTH - 100, 50);
 }
 
 function updateSharks(){
@@ -284,6 +294,7 @@ function updateSharks(){
 		}
 	}
 }
+
 function updateFlock(){
 	
 	//temporory, makes them all move
@@ -381,10 +392,9 @@ function init() {
 	fillSharks(3);
   
 	//change to request animation frame
+	setInterval(setTime, 1000);
 	return setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
 }
-
-
 
 function doKeyDown(evt){
 	switch (evt.keyCode) {
@@ -425,8 +435,9 @@ function gameLoop() {
  //draw regular fish (flock)
 	//draw predators
 	renderSharks();
-		renderFlock(); 
+	renderFlock(); 
 	renderOctopuses();
+	renderTime();
 }
 
 window.onload = function(){
