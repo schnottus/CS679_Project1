@@ -7,6 +7,7 @@ var ctx;
 
 var flock = [];  //all fish on game board
 var sharks = [];
+var octopuses = [];
 var preySpeed = 2;	//regular fish speed to normalize to
 var predSpeed = 2;  //predator speed
 var align = 0.95;  //alignment strength (between 0 and 1)
@@ -18,6 +19,8 @@ var leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely s
 var test = 0;
 var totalSeconds = 0;
 var timeString = "0:00";
+var gameInterval;
+var timeInterval;
 
 //called once every second by setInterval in the init function
 function setTime(){
@@ -75,7 +78,7 @@ function Octopus(x, y){
 	this.img = new Image();
 	this.img.src = "img/octopus.png";
 	this.draw = function(){
-		ctx.drawImage(this.img, this.x, this.y);
+		ctx.drawImage(this.img, this.x-this.img.width/2, this.y-this.img.height/2);
 		this.x += this.vX;
 		this.y += this.vY;
 		this.counter++;
@@ -83,13 +86,13 @@ function Octopus(x, y){
 			this.vX = randFromTo(0, 1)/10 - 0.05;
 			this.vY = randFromTo(0, 1)/10 - 0.05;
 			this.counter = 0;
-		}else if(this.x < -200){
+		}else if(this.x < this.img.height/2){
 			this.vX = .1;
-		}else if(this.x > WIDTH-300){
+		}else if(this.x > WIDTH-this.img.width/2){
 			this.vX = -.1;
-		}else if(this.y > HEIGHT-200){
+		}else if(this.y > HEIGHT-this.img.height/2){
 			this.vY = -.1;
-		}else if(this.y < -100){
+		}else if(this.y < this.img.height/2){
 			this.vY = .1;
 		}
 	}
@@ -170,7 +173,7 @@ function Fish(x, y, vX, vY, type){
 				ctx.rotate(aTanVal);
 				ctx.drawImage(this.img1, 0, 0);
 			}
-			ctx.restore();
+		ctx.restore();
 	}
 	
 	this.move = function() {
@@ -258,6 +261,14 @@ function fillSharks(qty){
 	}
 }
 
+function fillOctopuses(qty){
+	for (var i = 0; i < qty; i++){
+		var octX = randFromTo(200, WIDTH-200);
+		var octY = randFromTo(100, HEIGHT-100);
+		octopuses.push(new Octopus(octX, octY));
+	}
+}
+
 function renderFlock(){
 	for(var i = 0; i <  flock.length; i++){
 		flock[i].draw();
@@ -274,9 +285,10 @@ function renderSharks(){
 	}
 }
 
-var oct = new Octopus(300, 300);
 function renderOctopuses(){
-	oct.draw();
+	for(var i = 0; i < octopuses.length; i++){
+		octopuses[i].draw();
+	}
 }
 
 function renderTime(){
@@ -363,6 +375,19 @@ function updateFlock(){
 				}
 			}
 		}
+		for(var j = 0; j < octopuses.length; j++){
+			var oct = octopuses[j];
+			if( Math.abs(fishI.x - oct.x) < oct.img.width/2-20 && Math.abs(fishI.y - oct.y) < oct.img.height/2-20){
+				flock.splice(i, 1);
+				i--;
+				if(i == -1 && flock.length > 0){
+					loseGame();
+					flock[0].img1.src = "img/lead fish.png";
+					flock[0].img2.src = "img/lead fish2.png";
+				}
+			}
+		}
+		
     }
 	
     //start at 1 to not affect player
@@ -384,16 +409,33 @@ function updateGame(){
 }
 
 function init() {
+	flock = [];  //all fish on game board
+    sharks = [];
+	octopuses = [];
+	preySpeed = 2;	//regular fish speed to normalize to
+	predSpeed = 2;  //predator speed
+	align = 0.95;  //alignment strength (between 0 and 1)
+	preySight = 150; //distance a fish can "see" other fish
+	predSight = 200; //distance a predator can "see other fish
+	arcPlayer = 0; //rotation of player fish
+	crowdDist = 15; //distance that fish try to stay away from other fish
+	leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely strong, 1.0 for normal fish strength
+	totalSeconds = 0;
+	timeString = "0:00";
+
+	document.getElementById("intro").style.visibility = "hidden";
+	document.getElementById("over").style.visibility = "hidden";
 	canvas = document.getElementById("myCanvas");
 	ctx = canvas.getContext("2d");
 	ctx.fillStyle = "white";
 	ctx.strokeStyle = "black";
 	fillFlock(50);
 	fillSharks(3);
+	fillOctopuses(1);
   
 	//change to request animation frame
-	setInterval(setTime, 1000);
-	return setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
+	timeInterval = setInterval(setTime, 1000);
+	gameInterval = setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
 }
 
 function doKeyDown(evt){
@@ -428,8 +470,7 @@ function gameLoop() {
 	ctx.clearRect(0, 0, WIDTH, HEIGHT); //erase everything on the canvas
 	
 	//white canvas background, remove when we get an image in place
-	ctx.fillStyle = "#0589B2";
-	ctx.fillRect(0,0,WIDTH,HEIGHT);
+
 	
 	//draw background image
  //draw regular fish (flock)
@@ -440,8 +481,11 @@ function gameLoop() {
 	renderTime();
 }
 
-window.onload = function(){
-init();
+function loseGame(){
+	document.getElementById("over").style.visibility = "visible";
+	clearInterval(timeInterval);
+	clearInterval(gameInterval);
+	
 }
 
 window.addEventListener('keydown',doKeyDown,true);

@@ -3,32 +3,137 @@ css for project1 javascript game
 Author: Scott Larson
 */
 
-h1{
-	color: black;
-    font-family: Helvetica, Geneva, Arial,
-          SunSans-Regular, sans-serif;
-}
-
 body{
-	color: purple;
 	background-color: #cccccc;
-	padding: 10px 10px 10px 10px;
+    font-family: Helvetica, Geneva, Arial, SunSans-Regular, sans-serif;
 }
 
-#instructions{
-	float: left;
-	width: 200px;
+#myCanvas{
+	background-color: #0589B2;
+	z-index: 1;
+	border: 2px solid #000;
 }
-
-#game{
-	float: left;
+#wrapper{
+	position: relative;
 	width: 1200px;
-	margin-left: auto;
-	margin-right: auto;
+	margin: 0 auto;
+}
+#intro{
+	z-index: 2;
+	position: absolute;
+	left: 102px;
+	top: 152px;
+	height: 800px;
+	width: 1000px;
+
+}
+#play{
+	cursor: pointer;
+	width: 95px;
+	height: 45px;
+	background-image:url(img/play.png);
+	margin: 0 auto;
+	color: #0589B2;
+	padding-left: 55px;
+	padding-top: 5px;
+}
+#play h3{
+	margin: 0;
+	font-size: 35px;
+
+}
+#header{
+	padding: 10px;
+	height: 130px;
+}
+#title{
+	height: 110px;
+	width: 960px;
+	padding: 20px;
+	text-align: center;
+}
+#title h2{
+	font-size: 50px;
+	color: #fff;
+	margin-top: 40px;
+	padding: 0;
+}
+#rules{
+	margin: 0 auto;
+	height: 540px;
+	width: 890px;
+	padding: 5px;
+}
+p{
+	text-align: left;
+	margin: 0;
+	padding: 0;
+}
+.arrow{
+	height: 30px;
+	width: 30px;
+}
+#controls{
+	text-align: left;
+	width: 230px;
+	float: left;
+}
+#controls img{
+	float: left;
+	margin: 0 5px 5px 0;
+	
+}
+#fish{
+	padding: 0 15px;
+	width: 130px;
+	float: left;
+}
+.clear{
+	clear: left;
+}
+.desc{
+	height: 30px;
+	padding-top: 5px;
+	display: block;
+}
+.desc2{
+	height: 30px;
+	width: 100px;
+	padding-top: 5px;
+	display: block;
+	float: left;
+}
+.left{
+	float: left;
+	margin-right: 5px;
 }
 
-#options{
-	float: left;
-	width: 200px;
-	padding: 10px 10px 10px 10px;
+#over{
+	visibility: hidden;
+	z-index: 2;
+	position: absolute;
+	left: 102px;
+	top: 152px;
+	height: 800px;
+	width: 1000px;
+	text-align:center;
+}
+#over h2{
+	margin-top: 300px;
+	font-size: 100px;
+	margin-bottom: 30px;
+}
+#again{
+	background-image:url(img/playagain.png);
+	width:200px;
+	height:42px;
+	margin: 0 auto;	
+	cursor:pointer;
+	padding-top: 8px;
+}
+#again p{
+	margin: 0;
+	font-size: 30px;
+	color: #0589B2;
+	text-align:center;
 }
