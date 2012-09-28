@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>AwesomeGame</title>
+<link rel="stylesheet" href="main.css" type="text/css" />
+<script type="text/javascript" src="javascript.js"></script> 
+</head>
+
+<body>
+	<div id="wrapper">
+	<div id="header" align="center">
+	<h1>A Simple Game</h1>
+	<h2>Authors: Scott Larson and Alex Evans</h2>
+<<<<<<< HEAD
+
+	</div>
+
+	
+	
+	<canvas id="myCanvas" width="1200" height="800">
+=======
+	</header>
+	</div><!--header-->
+
+	
+	<div id="game" align="center">
+	<canvas id="myCanvas" width="1200" height="800" style="border:2px solid #000000;" >
+>>>>>>> bfb918a62eb08dd90283ed62d8d7c092c03ad591
+	Your browser does not support the HTML5 canvas tag.</canvas>
+
+    <div id="intro">
+    	<div id="title">
+        <h2>Our Crazy Cool Game Title</h2>
+        </div>
+        <div id="rules">
+        <h3>Background</h3>
+        <p>You are a prized and beautiful Regal Tang fish! Growing up you always felt superior to 
+           other fish and you were always one step ahead of your peers. Because of this, you quickly made it through
+           all of your fish training and even the most advanced levels of swimming school were a breeze for you.
+           Once you were finished with all of your education, you didn't feel you'd be satisfied to simply find a mate
+           and make a family, so instead you aspired to become a teacher yourself!<br><br>
+           You spent many hours studying all of the best teaching and leading techniques and eventually passed your
+           swim teacher exam! Today is your first day on the job, and you've been tasked with watching a school of Clownfish.
+           Everything seemed to be going fine when all of the sudden some predators infiltrated your reef! Because your students
+           are all new swimmers, they panicked and started swimming away wildly. As an instructor, you feel it is your duty to
+           swim after them and try to save them from the predators for as long as possible. Good luck!
+      
+        </p>
+        <h3>Instructions</h3>
+        <p>Try to round up the Clownfish and keep them away from predators for as long as possible. The game will end if either you or all of the Clownfish die.
+        </p>
+        <div id="controls">
+            <h3>Controls</h3>
+            <p>
+            <img class="arrow" src="img/up.png" alt="up arrow" /> <img class="arrow" src="img/down.png" alt="down arrow" /> <span class="desc">Accelerate/Decelerate</span>
+            <img class="arrow clear" src="img/left.png" alt="left arrow" /> <img class="arrow" src="img/right.png" alt="right arrow" /><span class="desc"> Turn Left/Right </span>
+            </p>
+        </div>
+        <div id="fish">
+        
+            <h3>Fish</h3>
+            <p>
+            <img src="img/lead fish.png" class="left" alt="a regal tang fish" /><span class="desc">You</span>
+            <img src="img/clown fish.png" class="left clear" alt="a clownfish" /><span class="desc">Clownfish</span>
+            
+          	</p>
+        </div>
+        <div id="predators">
+        	<h3>Predators</h3>
+            <p>
+            <img src="img/shark.png" class="left" alt="a shark" height="70" width="176" /><span class="desc2">Shark <br/>Eats you with his mouth</span>
+            <img src="img/octopus.png" class="left" alt="an octopus" height="70" width="111" /><span class="desc2">Octopus<br/>Eats you if you get too close</span>
+        </div>
+        </div>
+    	<div onclick="init()" id="play"><h3>Play</h3>
+        </div>
+	</div>
+    <div id="over">
+    	<h2>Game Over</h2>
+        <div id="again" onclick="init()"><p>Play Again?</p></div>
+    </div>
+	
+	
+
+
+
+</div>
+</body>
+</html>
+
+
+
+

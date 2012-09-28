@@ -20,8 +20,12 @@ var leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely s
 var test = 0;
 var totalSeconds = 0;
 var timeString = "0:00";
+<<<<<<< HEAD
 var gameInterval;
 var timeInterval;
+=======
+var minFlockSize = 10;
+>>>>>>> bfb918a62eb08dd90283ed62d8d7c092c03ad591
 
 //called once every second by setInterval in the init function
 function setTime(){
@@ -43,6 +47,14 @@ function randFromTo(from,to){
     return Math.floor(Math.random()*(to-from +1) +from);
 }
 
+function loseGame(){
+	//alert("You lasted " + totalSeconds + " seconds!");
+	//alert("Retry?");
+	
+	//clearInterval gameLoop
+	//clearInterval setTime
+	//init();
+}
 
 function printFlock(){ //flock troubleshooting
 	var str = "Flock array:";
@@ -357,7 +369,7 @@ function renderGUI(){
 	ctx.fillText("Time: " + timeString, WIDTH - 150, 50);  //formatted time
 	ctx.fillText(" Fish: " + flock.length, WIDTH - 150, 80);  //fish remaining
 	
-	//ctx.fillText(" arcPlayer: " + arcPlayer, WIDTH - 200, 180);  //
+	ctx.fillText(" arcPlayer: " + arcPlayer, WIDTH - 200, 180);  //
  }
 
 function updateSharks(){
@@ -452,6 +464,8 @@ function updateFlock(){
 				i--;
 				if(i == -1 && flock.length > 0){
 					loseGame();
+					flock[0].img1.src = "img/lead fish.png";
+					flock[0].img2.src = "img/lead fish2.png";
 				}
 			}
 		}
