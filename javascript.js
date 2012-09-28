@@ -2,6 +2,7 @@
 	
 var WIDTH = 1200;  //height and width should match canvas in index.html, is there a way to assert this?
 var HEIGHT = 800;
+var PI = Math.PI;
 var canvas;
 var ctx;
 
@@ -18,6 +19,7 @@ var leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely s
 var test = 0;
 var totalSeconds = 0;
 var timeString = "0:00";
+var minFlockSize = 10;
 
 //called once every second by setInterval in the init function
 function setTime(){
@@ -37,6 +39,15 @@ function editAlign(amt){
 //returns random number between 2 values (inclusive)
 function randFromTo(from,to){
     return Math.floor(Math.random()*(to-from +1) +from);
+}
+
+function loseGame(){
+	//alert("You lasted " + totalSeconds + " seconds!");
+	//alert("Retry?");
+	
+	//clearInterval gameLoop
+	//clearInterval setTime
+	//init();
 }
 
 function printFlock(){ //flock troubleshooting
@@ -233,6 +244,64 @@ function fillFlock(qty){
 		flock.push(tmp);  //add new fish to end of flock array
 	}
 	
+	//special case for player fish, override his move function
+	flock[0].move = function() {
+		this.x += this.vX;
+        this.y += this.vY;
+        if (this.x > canvas.width) {  //hit right wall
+			if(arcPlayer >= 0 && arcPlayer < (0.5*PI)){ //down and right
+				var dif = arcPlayer;
+				arcPlayer = PI - dif;
+				rotatePlayer(0,0); //to normalize arcPlayer and update player velocity
+			}else if(arcPlayer >= (1.5*PI) && arcPlayer <= (2*PI)){ // up and right
+				var dif = (2*PI) - arcPlayer;
+				arcPlayer = PI + dif;
+				rotatePlayer(0,0);
+			}else{ //error case
+				this.x -= 5;
+			}
+        }
+        if (this.y > canvas.height) { //hit bottom wall
+            if(arcPlayer >= 0 && arcPlayer <= (0.5*PI)){ //down and right
+				var dif = arcPlayer;
+				arcPlayer = (2*PI) - dif;
+				rotatePlayer(0,0); //to normalize arcPlayer and update player velocity
+			}else if(arcPlayer >= (0.5*PI) && arcPlayer <= PI){ // down and left
+				var dif = PI - arcPlayer;
+				arcPlayer = PI + dif;
+				rotatePlayer(0,0);
+			}else{ //error case
+				this.y -= 5;
+			}
+        }
+        if (this.x < 0) {	//hit left wall
+			if(arcPlayer >= (0.5*PI) && arcPlayer <= PI){ //down and left
+				var dif = PI - arcPlayer;
+				arcPlayer = dif;
+				rotatePlayer(0,0); //to normalize arcPlayer and update player velocity
+			}else if(arcPlayer >= PI && arcPlayer <= (1.5*PI)){ // up and left
+				var dif = (1.5*PI) - arcPlayer;
+				arcPlayer = (1.5*PI) + dif;
+				rotatePlayer(0,0);
+			}else{ //error case
+				this.x += 5;
+			}
+        }
+        if (this.y < 0) {	//hit top wall
+            if(arcPlayer >= (1.5*PI) && arcPlayer <= (2.0*PI)){ //up and right
+				var dif = (2.0*PI) - arcPlayer;
+				arcPlayer = dif;
+				rotatePlayer(0,0); //to normalize arcPlayer and update player velocity
+			}else if(arcPlayer >= PI && arcPlayer <= (1.5*PI)){ // up and left
+				var dif = arcPlayer - PI;
+				arcPlayer = PI - dif;
+				rotatePlayer(0,0);
+			}else{ //error case
+				this.y += 5;
+			}
+        }
+    }
+	
 }
 
 function fillSharks(qty){
@@ -279,11 +348,14 @@ function renderOctopuses(){
 	oct.draw();
 }
 
-function renderTime(){
+function renderGUI(){
 	ctx.fillStyle = "black";
 	ctx.font = "20pt Arial";
-	ctx.fillText(timeString, WIDTH - 100, 50);
-}
+	ctx.fillText("Time: " + timeString, WIDTH - 150, 50);  //formatted time
+	ctx.fillText(" Fish: " + flock.length, WIDTH - 150, 80);  //fish remaining
+	
+	ctx.fillText(" arcPlayer: " + arcPlayer, WIDTH - 200, 180);  //
+ }
 
 function updateSharks(){
 	for(var i = 0; i <  sharks.length; i++){
@@ -314,7 +386,7 @@ function updateFlock(){
 		tmpVX[i] = 0;
 		tmpVY[i] = 0;
 		
-		
+		//loop to compare fishI with other fish
         for(var j = 0; j <  flock.length; j++) {
 			var fishJ = flock[j];
 			
@@ -352,14 +424,21 @@ function updateFlock(){
 				}
 			}
         }
+		
+		//loop to compare fishI with sharks
 		for(var j = 0; j < sharks.length; j++){
 			var shark = sharks[j];
 			if( Math.abs(fishI.x - (shark.x+shark.mouthX)) < 25 && Math.abs(fishI.y - (shark.y+shark.mouthY)) < 20){
-				flock.splice(i, 1);
-				i--;
-				if(i == -1 && flock.length > 0){
-					flock[0].img1.src = "img/lead fish.png";
-					flock[0].img2.src = "img/lead fish2.png";
+				
+				//if fish 0 eaten lose game
+				if(i == 0){
+					loseGame();
+				}else{  //remove fish from flock
+					flock.splice(i, 1);
+					i--;
+					if(flock.length < minFlockSize){
+						loseGame();
+					}
 				}
 			}
 		}
@@ -396,7 +475,30 @@ function init() {
 	return setInterval(gameLoop, 10);  //calls the gameLoop function every 10 milliseconds
 }
 
-function doKeyDown(evt){
+//rotate a direction d (0 for left, 1 for right) and an amount a (in radians)
+function rotatePlayer(d, a){ 
+	if(d == 0){	//rotate left
+		arcPlayer -= a;
+	}else if(d == 1){   //rotate right
+		arcPlayer += a;
+	}else{
+		//throw error
+	}
+	
+	if(arcPlayer < 0) arcPlayer += (2*PI);
+	if(arcPlayer >= (2 * PI)) arcPlayer = arcPlayer%(2*PI);
+	
+	flock[0].vX = Math.cos(arcPlayer);
+	flock[0].vY = Math.sin(arcPlayer);
+	flock[0].norm();
+}
+
+var leftInterval;
+var rightInterval;
+var controlSpeed = 10;
+var firstLDown = true;
+var firstRDown = true;
+function doKeyUp(evt){
 	switch (evt.keyCode) {
 	case 38:  /* Up arrow was pressed */
 		//flock[0].vX += 1;
@@ -407,16 +509,38 @@ function doKeyDown(evt){
 		//flock[0].vY -= 1;
 		break;
 	case 37:  /* Left arrow was pressed */
-		arcPlayer -= 0.1;
-		flock[0].vX = Math.cos(arcPlayer);
-		flock[0].vY = Math.sin(arcPlayer);
-		flock[0].norm();
+		clearInterval(leftInterval);
+		firstLDown = true;
 		break;
 	case 39:  /* Right arrow was pressed */
-		arcPlayer += 0.1;
-		flock[0].vX = Math.cos(arcPlayer);
-		flock[0].vY = Math.sin(arcPlayer);
+		clearInterval(rightInterval);
+		firstRDown = true;
+		break;
+	}
+}
+
+function doKeyDown(evt){
+	
+	switch (evt.keyCode) {
+	case 38:  /* Up arrow was pressed */
+		if(flock[0].speed < 4) flock[0].speed += 0.3;
 		flock[0].norm();
+		break;
+	case 40:  /* Down arrow was pressed */
+		if(flock[0].speed > 0.8) flock[0].speed -= 0.3;
+		flock[0].norm();
+		break;
+	case 37:  /* Left arrow was pressed */
+		if(firstLDown){
+			leftInterval = setInterval('rotatePlayer(0,0.05)', controlSpeed);
+		}
+		firstLDown = false;
+		break;
+	case 39:  /* Right arrow was pressed */
+		if(firstRDown){
+			rightInterval = setInterval('rotatePlayer(1,0.05)', controlSpeed);
+		}
+		firstRDown = false;
 		break;
 	}
 }
@@ -434,14 +558,15 @@ function gameLoop() {
 	//draw background image
  //draw regular fish (flock)
 	//draw predators
-	renderSharks();
 	renderFlock(); 
+	renderSharks();
 	renderOctopuses();
-	renderTime();
+	renderGUI();
 }
 
 window.onload = function(){
 init();
 }
 
+window.addEventListener('keyup',doKeyUp,true);
 window.addEventListener('keydown',doKeyDown,true);
