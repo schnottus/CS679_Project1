@@ -22,7 +22,7 @@ body{
 	z-index: 2;
 	position: absolute;
 	left: 102px;
-	top: 152px;
+	top: 102px;
 	height: 800px;
 	width: 1000px;
 
@@ -44,7 +44,7 @@ body{
 }
 #header{
 	padding: 10px;
-	height: 130px;
+	height: 80px;
 }
 #title{
 	height: 110px;
@@ -113,7 +113,7 @@ p{
 	z-index: 2;
 	position: absolute;
 	left: 102px;
-	top: 152px;
+	top: 102px;
 	height: 800px;
 	width: 1000px;
 	text-align:center;

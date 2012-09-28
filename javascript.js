@@ -10,7 +10,7 @@ var flock = [];  //all fish on game board
 var sharks = [];
 var octopuses = [];
 var preySpeed = 2;	//regular fish speed to normalize to
-var predSpeed = 2;  //predator speed
+var predatorSpeed = 2;  //predator speed
 var align = 0.95;  //alignment strength (between 0 and 1)
 var preySight = 150; //distance a fish can "see" other fish
 var predSight = 200; //distance a predator can "see other fish
@@ -22,6 +22,8 @@ var totalSeconds = 0;
 var timeString = "0:00";
 var gameInterval;
 var timeInterval;
+var minFlockSize = 5;
+var totalSharks = 3;
 
 //called once every second by setInterval in the init function
 function setTime(){
@@ -166,14 +168,14 @@ function Fish(x, y, vX, vY, type){
 		
 		ctx.save();
 			var aTanVal = Math.atan(this.vY/this.vX);
-			ctx.translate(this.x-25, this.y-15);
+			ctx.translate(this.x, this.y);
 			
 			if(this.vX < 0){
 				ctx.rotate(Math.PI+aTanVal);
-				ctx.drawImage(this.img2, 0, 0);
+				ctx.drawImage(this.img2, -this.img1.width/2, -this.img1.height/2);
 			} else{
 				ctx.rotate(aTanVal);
-				ctx.drawImage(this.img1, 0, 0);
+				ctx.drawImage(this.img1, -this.img1.width/2, -this.img1.height/2);
 			}
 		ctx.restore();
 	}
@@ -301,17 +303,17 @@ function fillFlock(qty){
 function fillSharks(qty){
 	for (var i = 0; i < qty; i++){
 		var rx = randFromTo(0, 1);	//random x position between 1 and 2
-		var ry = randFromTo(1, HEIGHT-200);	//random y position between 1 and height
+		var ry = randFromTo(0, HEIGHT) - 50;	//random y position between 1 and height
 		//var rvX = randFromTo(1, preySpeed);  //random x velocity between 1 and speed
 		//var rvY = randFromTo(1, preySpeed);  //random y velocity between 1 and speed
 		var rvX;
 		var mouthX;
 		if(rx > .5){
-			rvX = 2;
+			rvX = predatorSpeed;
 			rx = -1*randFromTo(300,900);
 			mouthX = 434;
 		} else{
-			rvX = -2;
+			rvX = -predatorSpeed;
 			rx = WIDTH + randFromTo(300,900);
 			mouthX = 41;
 		}
@@ -359,6 +361,17 @@ function renderGUI(){
 	
 	//ctx.fillText(" arcPlayer: " + arcPlayer, WIDTH - 200, 180);  //
  }
+
+function updateDifficulty(){
+	if(totalSeconds > 20){
+		predatorSpeed += .001;
+		if(totalSeconds/10 > totalSharks){
+			fillSharks(1);
+			totalSharks++;
+		}
+	}
+	
+}
 
 function updateSharks(){
 	for(var i = 0; i <  sharks.length; i++){
@@ -448,10 +461,14 @@ function updateFlock(){
 		for(var j = 0; j < octopuses.length; j++){
 			var oct = octopuses[j];
 			if( Math.abs(fishI.x - oct.x) < oct.img.width/2-20 && Math.abs(fishI.y - oct.y) < oct.img.height/2-20){
-				flock.splice(i, 1);
-				i--;
-				if(i == -1 && flock.length > 0){
+				if(i == 0){
 					loseGame();
+				}else{  //remove fish from flock
+					flock.splice(i, 1);
+					i--;
+					if(flock.length < minFlockSize){
+						loseGame();
+					}
 				}
 			}
 		}
@@ -474,6 +491,7 @@ function updateGame(){
 	//updatePredators
 	updateSharks();
 	//update user interface (health, score, etc)
+	updateDifficulty();
 }
 
 function init() {
@@ -481,7 +499,7 @@ function init() {
     sharks = [];
 	octopuses = [];
 	preySpeed = 2;	//regular fish speed to normalize to
-	predSpeed = 2;  //predator speed
+	predatorSpeed = 2;  //predator speed
 	align = 0.95;  //alignment strength (between 0 and 1)
 	preySight = 150; //distance a fish can "see" other fish
 	predSight = 200; //distance a predator can "see other fish
@@ -490,6 +508,7 @@ function init() {
 	leadStr = 0.1; //strength of attraction to player fish, 0.0 for infinitely strong, 1.0 for normal fish strength
 	totalSeconds = 0;
 	timeString = "0:00";
+	totalSharks = 3;
 
 	document.getElementById("intro").style.visibility = "hidden";
 	document.getElementById("over").style.visibility = "hidden";
@@ -498,7 +517,7 @@ function init() {
 	ctx.fillStyle = "white";
 	ctx.strokeStyle = "black";
 	fillFlock(50);
-	fillSharks(3);
+	fillSharks(totalSharks);
 	fillOctopuses(1);
   
 	//change to request animation frame
